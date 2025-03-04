@@ -99,31 +99,57 @@ const initialData = [
 
 const userInput = document.querySelector('.user_input');
 const sendBtn = document.querySelector('.send_btn');
-const reviews = document.querySelector('.reviews');
-const divError = document.querySelector('.error_msg');
+const reviewsContainer = document.querySelector('.reviews');
+const errorMsg = document.querySelector('.error_msg');
+const productSelect = document.querySelector('.product_select');
 
-initialData.forEach(element => {
-    const productName = document.createElement('h3');
-    productName.textContent = element.product;
-    reviews.appendChild(productName);
-    element.reviews.forEach(review => {
-        const defaultReview = document.createElement('p');
-        defaultReview.textContent = review.text;
-        reviews.appendChild(defaultReview);
-    });
-});
+// 1️⃣ Функция для отображения отзывов выбранного продукта
+function displayReviews() {
+    reviewsContainer.innerHTML = ''; // Очищаем список
 
+    const selectedProduct = productSelect.value;
+    const productData = initialData.find(item => item.product === selectedProduct);
 
+    if (productData) {
+        const productTitle = document.createElement('h3');
+        productTitle.textContent = productData.product;
+        reviewsContainer.appendChild(productTitle);
+
+        productData.reviews.forEach(review => {
+            const reviewElem = document.createElement('p');
+            reviewElem.textContent = review.text;
+            reviewsContainer.appendChild(reviewElem);
+        });
+    }
+}
+
+// 2️⃣ Отображаем отзывы при изменении выбора продукта
+productSelect.addEventListener('change', displayReviews);
+
+// 3️⃣ Добавление нового отзыва
 sendBtn.addEventListener('click', function () {
     try {
-        if (userInput.value.trim().length < 20 || userInput.value.trim().length > 500) {
-            throw new Error('Несоответствующая длина текста')
+        const reviewText = userInput.value.trim();
+
+        if (reviewText.length < 20 || reviewText.length > 500) {
+            throw new Error('Длина отзыва должна быть от 20 до 500 символов');
         }
-        const reviewElem = document.createElement('p');
-        reviewElem.textContent = (userInput.value);
-        reviews.appendChild(reviewElem);
-        divError.textContent = '';
+
+        const selectedProduct = productSelect.value;
+        const productData = initialData.find(item => item.product === selectedProduct);
+
+        if (productData) {
+            const newReview = { id: Date.now().toString(), text: reviewText };
+            productData.reviews.push(newReview); // Добавляем в массив
+            displayReviews(); // Обновляем отображение
+        }
+
+        errorMsg.textContent = ''; // Очищаем ошибки
+        userInput.value = ''; // Очищаем поле ввода
     } catch (error) {
-        divError.textContent = error.message;
+        errorMsg.textContent = error.message;
     }
 });
+
+// 4️⃣ При загрузке страницы показываем отзывы первого продукта
+displayReviews();
